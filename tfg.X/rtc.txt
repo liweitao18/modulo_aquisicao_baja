@@ -1,0 +1,38 @@
+#include "basico.h"
+#include "config.h"
+#include "lcd.h"
+#include "rtc.h"
+
+void main(void) {
+    float i;
+    
+    //Inicializacoes
+    InicializaLCD();
+    rtcInit();
+    
+    //Escreve data/hora no RTC
+    ht1380write(7, 0);
+    rtcPutSeconds(0);
+    rtcPutMinutes(0);
+    rtcPutHours(0);
+    rtcPutDate(1);
+    rtcPutMonth(1);
+    rtcPutYear(14);
+    rtcPutDay(4);
+    
+    for (;;) {
+        //Le horario do RTC
+        EnviaComando(0x80);
+        EnviaDados(((rtcGetHours() / 10) % 10) + 48);
+        EnviaDados((rtcGetHours() % 10) + 48);
+        EnviaDados(':');
+        EnviaDados(((rtcGetMinutes() / 10) % 10) + 48);
+        EnviaDados((rtcGetMinutes() % 10) + 48);
+        EnviaDados(':');
+        EnviaDados(((rtcGetSeconds() / 10) % 10) + 48);
+        EnviaDados((rtcGetSeconds() % 10) + 48);
+        
+        for (i = 0; i < 1000; i++);
+        
+    }
+}

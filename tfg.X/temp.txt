@@ -1,0 +1,30 @@
+#include "basico.h"
+#include "config.h"
+#include "adc.h"
+#include "lcd.h"
+
+void main(void) {
+    unsigned int i,j;
+    unsigned int AD = 0;
+    unsigned int temp;
+    
+    InicializaLCD();
+    InicializaAD();
+    
+    for(;;) {
+        AD = LeValorAD();
+        temp = AD/6.65;
+        EnviaComando(0x01);	//limpar display
+        EnviaDados('T');
+        EnviaDados('.');
+        EnviaDados('C');
+        EnviaDados('V');
+        EnviaDados('T');
+        EnviaDados(':');
+        EnviaDados((temp/100 )%10 + 48);
+        EnviaDados((temp/10  )%10 + 48);
+        EnviaDados((temp/1   )%10 + 48);
+        EnviaDados('C');
+        for (j = 0; j < 65000 ; j ++) ;
+    }
+}

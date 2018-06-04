@@ -1,0 +1,39 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# 694102303002
+#
+DEF 694102303002 J 0 40 Y N 1 L N
+F0 "J" -401 100 50 H V L BNN
+F1 "694102303002" -401 -301 50 H V L BNN
+F2 "69410X303002" 0 0 50 H I L BNN
+F3 "DC Power jack [Würth Elektronik] 694102303002 DC Power jack" 0 0 50 H I L BNN
+F4 "None" 0 0 50 H I L BNN
+F5 "Wurth" 0 0 50 H I L BNN
+F6 "0.68 USD" 0 0 50 H I L BNN
+F7 "694102303002" 0 0 50 H I L BNN
+F8 "Warning" 0 0 50 H I L BNN
+DRAW
+A -325 0 50 900 2700 0 0 6 N -325 50 -325 -50
+P 2 0 0 6 -325 50 -150 50 N
+P 2 0 0 6 -150 50 -150 -50 N
+P 2 0 0 6 -150 -50 -325 -50 N
+P 2 0 0 6 -150 -50 -150 -75 N
+P 2 0 0 6 -150 -75 -100 -75 N
+P 2 0 0 6 -100 -75 -100 75 N
+P 2 0 0 6 -100 75 -150 75 N
+P 2 0 0 6 -150 75 -150 50 N
+P 2 0 0 6 -100 -200 -325 -200 N
+P 2 0 0 6 -325 -200 -350 -150 N
+P 2 0 0 6 -350 -150 -375 -200 N
+P 2 0 0 6 -100 -100 -100 -200 N
+P 3 0 0 6 -100 -200 -120 -150 -80 -150 F
+X 1 1 0 0 100 L 40 40 0 0 P 
+X 2 2 0 -200 100 L 40 40 0 0 P 
+X 3 3 0 -100 100 L 40 40 0 0 P 
+ENDDRAW
+ENDDEF
+#
+# End Library

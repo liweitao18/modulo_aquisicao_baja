@@ -1,0 +1,630 @@
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  1
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+                      00001 ;--------------------------------------------------------
+                      00002 ; File Created by SDCC : free open source ANSI-C Compiler
+                      00003 ; Version 3.6.0 #9615 (MINGW32)
+                      00004 ;--------------------------------------------------------
+                      00005 ; PIC16 port for the Microchip 16-bit core micros
+                      00006 ;--------------------------------------------------------
+                      00007         list    p=18f4520
+                      00008         radix   dec
+                      00009         CONFIG  MCLRE=ON
+                      00010         CONFIG  OSC=HS
+                      00011         CONFIG  WDT=OFF
+                      00012         CONFIG  LVP=OFF
+                      00013         CONFIG  DEBUG=OFF
+                      00014         CONFIG  WDTPS=1
+                      00015 
+                      00016 
+                      00017 ;--------------------------------------------------------
+                      00018 ; public variables in this module
+                      00019 ;--------------------------------------------------------
+  0000                00020         global  _pulsos
+  0000                00021         global  _tmp
+  0000                00022         global  _i
+  0000                00023         global  _Contador
+  0000                00024         global  _main
+                      00025 
+                      00026 ;--------------------------------------------------------
+                      00027 ; extern variables in this module
+                      00028 ;--------------------------------------------------------
+  0000                00029         extern  _EnviaComando
+  0000                00030         extern  _EnviaDados
+  0000                00031         extern  _InicializaLCD
+  0000                00032         extern  __mulint
+  0000                00033         extern  __divsint
+  0000                00034         extern  __modsint
+                      00035 
+                      00036 ;--------------------------------------------------------
+                      00037 ;       Equates to used internal registers
+                      00038 ;--------------------------------------------------------
+  00000FD8            00039 STATUS  equ     0xfd8
+  00000FFA            00040 PCLATH  equ     0xffa
+  00000FFB            00041 PCLATU  equ     0xffb
+  00000FE0            00042 BSR     equ     0xfe0
+  00000FE9            00043 FSR0L   equ     0xfe9
+  00000FEA            00044 FSR0H   equ     0xfea
+  00000FE1            00045 FSR1L   equ     0xfe1
+  00000FD9            00046 FSR2L   equ     0xfd9
+  00000FEF            00047 INDF0   equ     0xfef
+  00000FE6            00048 POSTINC1        equ     0xfe6
+  00000FE5            00049 POSTDEC1        equ     0xfe5
+  00000FE4            00050 PREINC1 equ     0xfe4
+  00000FF3            00051 PRODL   equ     0xff3
+  00000FF4            00052 PRODH   equ     0xff4
+                      00053 
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  2
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+                      00054 
+                      00055 ; Internal registers
+                      00056 .registers      udata_ovr       0x0000
+000000                00057 r0x00   res     1
+000001                00058 r0x01   res     1
+                      00059 
+                      00060 udata_main_0    udata
+000000                00061 _tmp    res     2
+                      00062 
+                      00063 udata_main_1    udata
+000000                00064 _i      res     1
+                      00065 
+                      00066 udata_main_2    udata
+000000                00067 _pulsos res     2
+                      00068 
+                      00069 ;--------------------------------------------------------
+                      00070 ; interrupt vector
+                      00071 ;--------------------------------------------------------
+                      00072 
+                      00073 ;--------------------------------------------------------
+                      00074 ; global & static initialisations
+                      00075 ;--------------------------------------------------------
+                      00076 ; ; Starting pCode block for absolute section
+                      00077 ; ;-----------------------------------------
+                      00078 S_main_ivec_0x1_Contador        code    0X000008
+000008                00079 ivec_0x1_Contador:
+000008 EF00 F000      00080         GOTO    _Contador
+                      00081 
+                      00082 ; I code from now on!
+                      00083 ; ; Starting pCode block
+                      00084 S_main__main    code
+000000                00085 _main:
+                      00086 ;       .line   28; main.c      PR2 = 98; //valor para a interrupção do timer2 durar 10,03 ms
+000000 EE0F F0CB      00087         LFSR    0x00, 0xfcb
+000004 0E62           00088         MOVLW   0x62
+000006 6EEF           00089         MOVWF   INDF0
+                      00090 ;       .line   29; main.c      BitSet(TRISA, 4); //seta o bit 4 como entrada
+000008 EE0F F092      00091         LFSR    0x00, 0xf92
+00000C CFEF F000      00092         MOVFF   INDF0, r0x00
+000010 88??           00093         BSF     r0x00, 4
+000012 EE0F F092      00094         LFSR    0x00, 0xf92
+000016 C??? F???      00095         MOVFF   r0x00, INDF0
+                      00096 ;       .line   30; main.c      InicializaLCD();
+00001A EC?? F0??      00097         CALL    _InicializaLCD
+                      00098 ;       .line   31; main.c      BitSet(T0CON, 6); //timer0 8 bits
+00001E EE0F F0D5      00099         LFSR    0x00, 0xfd5
+000022 CFEF F000      00100         MOVFF   INDF0, r0x00
+000026 8C??           00101         BSF     r0x00, 6
+000028 EE0F F0D5      00102         LFSR    0x00, 0xfd5
+00002C C??? F???      00103         MOVFF   r0x00, INDF0
+                      00104 ;       .line   32; main.c      BitSet(T0CON, 5); //habilita o clock externo
+000030 EE0F F0D5      00105         LFSR    0x00, 0xfd5
+000034 CFEF F000      00106         MOVFF   INDF0, r0x00
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  3
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+000038 8A??           00107         BSF     r0x00, 5
+00003A EE0F F0D5      00108         LFSR    0x00, 0xfd5
+00003E C??? F???      00109         MOVFF   r0x00, INDF0
+                      00110 ;       .line   33; main.c      BitSet(T0CON, 4); //habilita a borda de subida
+000042 EE0F F0D5      00111         LFSR    0x00, 0xfd5
+000046 CFEF F000      00112         MOVFF   INDF0, r0x00
+00004A 88??           00113         BSF     r0x00, 4
+00004C EE0F F0D5      00114         LFSR    0x00, 0xfd5
+000050 C??? F???      00115         MOVFF   r0x00, INDF0
+                      00116 ;       .line   34; main.c      BitSet(T0CON, 3); //não usar prescaler
+000054 EE0F F0D5      00117         LFSR    0x00, 0xfd5
+000058 CFEF F000      00118         MOVFF   INDF0, r0x00
+00005C 86??           00119         BSF     r0x00, 3
+00005E EE0F F0D5      00120         LFSR    0x00, 0xfd5
+000062 C??? F???      00121         MOVFF   r0x00, INDF0
+                      00122 ;       .line   35; main.c      BitSet(T0CON, 7); //habilita o timer0
+000066 EE0F F0D5      00123         LFSR    0x00, 0xfd5
+00006A CFEF F000      00124         MOVFF   INDF0, r0x00
+00006E 8E??           00125         BSF     r0x00, 7
+000070 EE0F F0D5      00126         LFSR    0x00, 0xfd5
+000074 C??? F???      00127         MOVFF   r0x00, INDF0
+                      00128 ;       .line   37; main.c      BitSet(T2CON, 6); //postscale 1:16
+000078 EE0F F0CA      00129         LFSR    0x00, 0xfca
+00007C CFEF F000      00130         MOVFF   INDF0, r0x00
+000080 8C??           00131         BSF     r0x00, 6
+000082 EE0F F0CA      00132         LFSR    0x00, 0xfca
+000086 C??? F???      00133         MOVFF   r0x00, INDF0
+                      00134 ;       .line   38; main.c      BitSet(T2CON, 5); //postscale 1:16
+00008A EE0F F0CA      00135         LFSR    0x00, 0xfca
+00008E CFEF F000      00136         MOVFF   INDF0, r0x00
+000092 8A??           00137         BSF     r0x00, 5
+000094 EE0F F0CA      00138         LFSR    0x00, 0xfca
+000098 C??? F???      00139         MOVFF   r0x00, INDF0
+                      00140 ;       .line   39; main.c      BitSet(T2CON, 4); //postscale 1:16
+00009C EE0F F0CA      00141         LFSR    0x00, 0xfca
+0000A0 CFEF F000      00142         MOVFF   INDF0, r0x00
+0000A4 88??           00143         BSF     r0x00, 4
+0000A6 EE0F F0CA      00144         LFSR    0x00, 0xfca
+0000AA C??? F???      00145         MOVFF   r0x00, INDF0
+                      00146 ;       .line   40; main.c      BitSet(T2CON, 3); //postscale 1:16
+0000AE EE0F F0CA      00147         LFSR    0x00, 0xfca
+0000B2 CFEF F000      00148         MOVFF   INDF0, r0x00
+0000B6 86??           00149         BSF     r0x00, 3
+0000B8 EE0F F0CA      00150         LFSR    0x00, 0xfca
+0000BC C??? F???      00151         MOVFF   r0x00, INDF0
+                      00152 ;       .line   41; main.c      BitSet(T2CON, 1); //prescaler 16
+0000C0 EE0F F0CA      00153         LFSR    0x00, 0xfca
+0000C4 CFEF F000      00154         MOVFF   INDF0, r0x00
+0000C8 82??           00155         BSF     r0x00, 1
+0000CA EE0F F0CA      00156         LFSR    0x00, 0xfca
+0000CE C??? F???      00157         MOVFF   r0x00, INDF0
+                      00158 ;       .line   42; main.c      BitSet(T2CON, 2); //habilita o timer2
+0000D2 EE0F F0CA      00159         LFSR    0x00, 0xfca
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  4
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+0000D6 CFEF F000      00160         MOVFF   INDF0, r0x00
+0000DA 84??           00161         BSF     r0x00, 2
+0000DC EE0F F0CA      00162         LFSR    0x00, 0xfca
+0000E0 C??? F???      00163         MOVFF   r0x00, INDF0
+                      00164 ;       .line   43; main.c      BitSet(PIE1, 1); //habilita o interrrupt do timer2 (dura 10,03 ms)
+0000E4 EE0F F09D      00165         LFSR    0x00, 0xf9d
+0000E8 CFEF F000      00166         MOVFF   INDF0, r0x00
+0000EC 82??           00167         BSF     r0x00, 1
+0000EE EE0F F09D      00168         LFSR    0x00, 0xf9d
+0000F2 C??? F???      00169         MOVFF   r0x00, INDF0
+                      00170 ;       .line   45; main.c      BitSet(INTCON, 7); //habilita interrupt global
+0000F6 EE0F F0F2      00171         LFSR    0x00, 0xff2
+0000FA CFEF F000      00172         MOVFF   INDF0, r0x00
+0000FE 8E??           00173         BSF     r0x00, 7
+000100 EE0F F0F2      00174         LFSR    0x00, 0xff2
+000104 C??? F???      00175         MOVFF   r0x00, INDF0
+                      00176 ;       .line   46; main.c      BitSet(INTCON, 6); //habilita interrupt perifericos
+000108 EE0F F0F2      00177         LFSR    0x00, 0xff2
+00010C CFEF F000      00178         MOVFF   INDF0, r0x00
+000110 8C??           00179         BSF     r0x00, 6
+000112 EE0F F0F2      00180         LFSR    0x00, 0xff2
+000116 C??? F???      00181         MOVFF   r0x00, INDF0
+00011A                00182 _00126_DS_:
+                      00183 ;       .line   50; main.c      EnviaComando(0x01); //limpar display
+00011A 0E01           00184         MOVLW   0x01
+00011C 6EE5           00185         MOVWF   POSTDEC1
+00011E EC?? F0??      00186         CALL    _EnviaComando
+000122 52E6           00187         MOVF    POSTINC1, F
+                      00188 ;       .line   51; main.c      EnviaDados('R');
+000124 0E52           00189         MOVLW   0x52
+000126 6EE5           00190         MOVWF   POSTDEC1
+000128 EC?? F0??      00191         CALL    _EnviaDados
+00012C 52E6           00192         MOVF    POSTINC1, F
+                      00193 ;       .line   52; main.c      EnviaDados('P');
+00012E 0E50           00194         MOVLW   0x50
+000130 6EE5           00195         MOVWF   POSTDEC1
+000132 EC?? F0??      00196         CALL    _EnviaDados
+000136 52E6           00197         MOVF    POSTINC1, F
+                      00198 ;       .line   53; main.c      EnviaDados('M');
+000138 0E4D           00199         MOVLW   0x4d
+00013A 6EE5           00200         MOVWF   POSTDEC1
+00013C EC?? F0??      00201         CALL    _EnviaDados
+000140 52E6           00202         MOVF    POSTINC1, F
+                      00203 ;       .line   54; main.c      EnviaDados(':');
+000142 0E3A           00204         MOVLW   0x3a
+000144 6EE5           00205         MOVWF   POSTDEC1
+000146 EC?? F0??      00206         CALL    _EnviaDados
+00014A 52E6           00207         MOVF    POSTINC1, F
+00014C 010?           00208         BANKSEL (_pulsos + 1)
+                      00209 ;       .line   55; main.c      EnviaDados(((60*pulsos) / 1000) % 10 + 48);
+00014E 51??           00210         MOVF    (_pulsos + 1), W, B
+000150 6EE5           00211         MOVWF   POSTDEC1
+000152 010?           00212         BANKSEL _pulsos
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  5
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+000154 51??           00213         MOVF    _pulsos, W, B
+000156 6EE5           00214         MOVWF   POSTDEC1
+000158 0E00           00215         MOVLW   0x00
+00015A 6EE5           00216         MOVWF   POSTDEC1
+00015C 0E3C           00217         MOVLW   0x3c
+00015E 6EE5           00218         MOVWF   POSTDEC1
+000160 EC?? F0??      00219         CALL    __mulint
+000164 6E??           00220         MOVWF   r0x00
+000166 CFF3 F000      00221         MOVFF   PRODL, r0x01
+00016A 0E04           00222         MOVLW   0x04
+00016C 26E1           00223         ADDWF   FSR1L, F
+00016E 0E03           00224         MOVLW   0x03
+000170 6EE5           00225         MOVWF   POSTDEC1
+000172 0EE8           00226         MOVLW   0xe8
+000174 6EE5           00227         MOVWF   POSTDEC1
+000176 50??           00228         MOVF    r0x01, W
+000178 6EE5           00229         MOVWF   POSTDEC1
+00017A 50??           00230         MOVF    r0x00, W
+00017C 6EE5           00231         MOVWF   POSTDEC1
+00017E EC?? F0??      00232         CALL    __divsint
+000182 6E??           00233         MOVWF   r0x00
+000184 CFF3 F000      00234         MOVFF   PRODL, r0x01
+000188 0E04           00235         MOVLW   0x04
+00018A 26E1           00236         ADDWF   FSR1L, F
+00018C 0E00           00237         MOVLW   0x00
+00018E 6EE5           00238         MOVWF   POSTDEC1
+000190 0E0A           00239         MOVLW   0x0a
+000192 6EE5           00240         MOVWF   POSTDEC1
+000194 50??           00241         MOVF    r0x01, W
+000196 6EE5           00242         MOVWF   POSTDEC1
+000198 50??           00243         MOVF    r0x00, W
+00019A 6EE5           00244         MOVWF   POSTDEC1
+00019C EC?? F0??      00245         CALL    __modsint
+0001A0 6E??           00246         MOVWF   r0x00
+0001A2 CFF3 F000      00247         MOVFF   PRODL, r0x01
+0001A6 0E04           00248         MOVLW   0x04
+0001A8 26E1           00249         ADDWF   FSR1L, F
+0001AA 0E30           00250         MOVLW   0x30
+0001AC 26??           00251         ADDWF   r0x00, F
+0001AE 50??           00252         MOVF    r0x00, W
+0001B0 6EE5           00253         MOVWF   POSTDEC1
+0001B2 EC?? F0??      00254         CALL    _EnviaDados
+0001B6 52E6           00255         MOVF    POSTINC1, F
+0001B8 010?           00256         BANKSEL (_pulsos + 1)
+                      00257 ;       .line   56; main.c      EnviaDados(((60*pulsos) / 100) % 10 + 48);
+0001BA 51??           00258         MOVF    (_pulsos + 1), W, B
+0001BC 6EE5           00259         MOVWF   POSTDEC1
+0001BE 010?           00260         BANKSEL _pulsos
+0001C0 51??           00261         MOVF    _pulsos, W, B
+0001C2 6EE5           00262         MOVWF   POSTDEC1
+0001C4 0E00           00263         MOVLW   0x00
+0001C6 6EE5           00264         MOVWF   POSTDEC1
+0001C8 0E3C           00265         MOVLW   0x3c
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  6
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+0001CA 6EE5           00266         MOVWF   POSTDEC1
+0001CC EC?? F0??      00267         CALL    __mulint
+0001D0 6E??           00268         MOVWF   r0x00
+0001D2 CFF3 F000      00269         MOVFF   PRODL, r0x01
+0001D6 0E04           00270         MOVLW   0x04
+0001D8 26E1           00271         ADDWF   FSR1L, F
+0001DA 0E00           00272         MOVLW   0x00
+0001DC 6EE5           00273         MOVWF   POSTDEC1
+0001DE 0E64           00274         MOVLW   0x64
+0001E0 6EE5           00275         MOVWF   POSTDEC1
+0001E2 50??           00276         MOVF    r0x01, W
+0001E4 6EE5           00277         MOVWF   POSTDEC1
+0001E6 50??           00278         MOVF    r0x00, W
+0001E8 6EE5           00279         MOVWF   POSTDEC1
+0001EA EC?? F0??      00280         CALL    __divsint
+0001EE 6E??           00281         MOVWF   r0x00
+0001F0 CFF3 F000      00282         MOVFF   PRODL, r0x01
+0001F4 0E04           00283         MOVLW   0x04
+0001F6 26E1           00284         ADDWF   FSR1L, F
+0001F8 0E00           00285         MOVLW   0x00
+0001FA 6EE5           00286         MOVWF   POSTDEC1
+0001FC 0E0A           00287         MOVLW   0x0a
+0001FE 6EE5           00288         MOVWF   POSTDEC1
+000200 50??           00289         MOVF    r0x01, W
+000202 6EE5           00290         MOVWF   POSTDEC1
+000204 50??           00291         MOVF    r0x00, W
+000206 6EE5           00292         MOVWF   POSTDEC1
+000208 EC?? F0??      00293         CALL    __modsint
+00020C 6E??           00294         MOVWF   r0x00
+00020E CFF3 F000      00295         MOVFF   PRODL, r0x01
+000212 0E04           00296         MOVLW   0x04
+000214 26E1           00297         ADDWF   FSR1L, F
+000216 0E30           00298         MOVLW   0x30
+000218 26??           00299         ADDWF   r0x00, F
+00021A 50??           00300         MOVF    r0x00, W
+00021C 6EE5           00301         MOVWF   POSTDEC1
+00021E EC?? F0??      00302         CALL    _EnviaDados
+000222 52E6           00303         MOVF    POSTINC1, F
+000224 010?           00304         BANKSEL (_pulsos + 1)
+                      00305 ;       .line   57; main.c      EnviaDados(((60*pulsos) / 10) % 10 + 48);
+000226 51??           00306         MOVF    (_pulsos + 1), W, B
+000228 6EE5           00307         MOVWF   POSTDEC1
+00022A 010?           00308         BANKSEL _pulsos
+00022C 51??           00309         MOVF    _pulsos, W, B
+00022E 6EE5           00310         MOVWF   POSTDEC1
+000230 0E00           00311         MOVLW   0x00
+000232 6EE5           00312         MOVWF   POSTDEC1
+000234 0E3C           00313         MOVLW   0x3c
+000236 6EE5           00314         MOVWF   POSTDEC1
+000238 EC?? F0??      00315         CALL    __mulint
+00023C 6E??           00316         MOVWF   r0x00
+00023E CFF3 F000      00317         MOVFF   PRODL, r0x01
+000242 0E04           00318         MOVLW   0x04
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  7
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+000244 26E1           00319         ADDWF   FSR1L, F
+000246 0E00           00320         MOVLW   0x00
+000248 6EE5           00321         MOVWF   POSTDEC1
+00024A 0E0A           00322         MOVLW   0x0a
+00024C 6EE5           00323         MOVWF   POSTDEC1
+00024E 50??           00324         MOVF    r0x01, W
+000250 6EE5           00325         MOVWF   POSTDEC1
+000252 50??           00326         MOVF    r0x00, W
+000254 6EE5           00327         MOVWF   POSTDEC1
+000256 EC?? F0??      00328         CALL    __divsint
+00025A 6E??           00329         MOVWF   r0x00
+00025C CFF3 F000      00330         MOVFF   PRODL, r0x01
+000260 0E04           00331         MOVLW   0x04
+000262 26E1           00332         ADDWF   FSR1L, F
+000264 0E00           00333         MOVLW   0x00
+000266 6EE5           00334         MOVWF   POSTDEC1
+000268 0E0A           00335         MOVLW   0x0a
+00026A 6EE5           00336         MOVWF   POSTDEC1
+00026C 50??           00337         MOVF    r0x01, W
+00026E 6EE5           00338         MOVWF   POSTDEC1
+000270 50??           00339         MOVF    r0x00, W
+000272 6EE5           00340         MOVWF   POSTDEC1
+000274 EC?? F0??      00341         CALL    __modsint
+000278 6E??           00342         MOVWF   r0x00
+00027A CFF3 F000      00343         MOVFF   PRODL, r0x01
+00027E 0E04           00344         MOVLW   0x04
+000280 26E1           00345         ADDWF   FSR1L, F
+000282 0E30           00346         MOVLW   0x30
+000284 26??           00347         ADDWF   r0x00, F
+000286 50??           00348         MOVF    r0x00, W
+000288 6EE5           00349         MOVWF   POSTDEC1
+00028A EC?? F0??      00350         CALL    _EnviaDados
+00028E 52E6           00351         MOVF    POSTINC1, F
+000290 010?           00352         BANKSEL (_pulsos + 1)
+                      00353 ;       .line   58; main.c      EnviaDados(((60*pulsos) / 1) % 10 + 48);
+000292 51??           00354         MOVF    (_pulsos + 1), W, B
+000294 6EE5           00355         MOVWF   POSTDEC1
+000296 010?           00356         BANKSEL _pulsos
+000298 51??           00357         MOVF    _pulsos, W, B
+00029A 6EE5           00358         MOVWF   POSTDEC1
+00029C 0E00           00359         MOVLW   0x00
+00029E 6EE5           00360         MOVWF   POSTDEC1
+0002A0 0E3C           00361         MOVLW   0x3c
+0002A2 6EE5           00362         MOVWF   POSTDEC1
+0002A4 EC?? F0??      00363         CALL    __mulint
+0002A8 6E??           00364         MOVWF   r0x00
+0002AA CFF3 F000      00365         MOVFF   PRODL, r0x01
+0002AE 0E04           00366         MOVLW   0x04
+0002B0 26E1           00367         ADDWF   FSR1L, F
+0002B2 0E00           00368         MOVLW   0x00
+0002B4 6EE5           00369         MOVWF   POSTDEC1
+0002B6 0E0A           00370         MOVLW   0x0a
+0002B8 6EE5           00371         MOVWF   POSTDEC1
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  8
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+0002BA 50??           00372         MOVF    r0x01, W
+0002BC 6EE5           00373         MOVWF   POSTDEC1
+0002BE 50??           00374         MOVF    r0x00, W
+0002C0 6EE5           00375         MOVWF   POSTDEC1
+0002C2 EC?? F0??      00376         CALL    __modsint
+0002C6 6E??           00377         MOVWF   r0x00
+0002C8 CFF3 F000      00378         MOVFF   PRODL, r0x01
+0002CC 0E04           00379         MOVLW   0x04
+0002CE 26E1           00380         ADDWF   FSR1L, F
+0002D0 0E30           00381         MOVLW   0x30
+0002D2 26??           00382         ADDWF   r0x00, F
+0002D4 50??           00383         MOVF    r0x00, W
+0002D6 6EE5           00384         MOVWF   POSTDEC1
+0002D8 EC?? F0??      00385         CALL    _EnviaDados
+0002DC 52E6           00386         MOVF    POSTINC1, F
+0002DE D???           00387         BRA     _00126_DS_
+0002E0 0012           00388         RETURN  
+                      00389 
+                      00390 ; ; Starting pCode block
+                      00391 S_main__Contador        code
+000000                00392 _Contador:
+                      00393 ;       .line   9; main.c       void Contador(void) __interrupt 1 {
+000000 CFD8 FFE5      00394         MOVFF   STATUS, POSTDEC1
+000004 CFE0 FFE5      00395         MOVFF   BSR, POSTDEC1
+000008 6EE5           00396         MOVWF   POSTDEC1
+00000A CFF3 FFE5      00397         MOVFF   PRODL, POSTDEC1
+00000E CFF4 FFE5      00398         MOVFF   PRODH, POSTDEC1
+000012 CFE9 FFE5      00399         MOVFF   FSR0L, POSTDEC1
+000016 CFEA FFE5      00400         MOVFF   FSR0H, POSTDEC1
+00001A CFFA FFE5      00401         MOVFF   PCLATH, POSTDEC1
+00001E CFFB FFE5      00402         MOVFF   PCLATU, POSTDEC1
+000022 CFD9 FFE5      00403         MOVFF   FSR2L, POSTDEC1
+000026 CFE1 FFD9      00404         MOVFF   FSR1L, FSR2L
+00002A C??? F???      00405         MOVFF   r0x00, POSTDEC1
+00002E C??? F???      00406         MOVFF   r0x01, POSTDEC1
+                      00407 ;       .line   12; main.c      if (BitTst(PIR1, 1)) {
+000032 EE0F F09E      00408         LFSR    0x00, 0xf9e
+000036 CFEF F000      00409         MOVFF   INDF0, r0x00
+00003A A2??           00410         BTFSS   r0x00, 1
+00003C D???           00411         BRA     _00109_DS_
+                      00412 ;       .line   14; main.c      tmp += TMR0L;
+00003E EE0F F0D6      00413         LFSR    0x00, 0xfd6
+000042 CFEF F000      00414         MOVFF   INDF0, r0x00
+000046 6A??           00415         CLRF    r0x01
+000048 50??           00416         MOVF    r0x00, W
+00004A 010?           00417         BANKSEL _tmp
+00004C 27??           00418         ADDWF   _tmp, F, B
+00004E 50??           00419         MOVF    r0x01, W
+000050 010?           00420         BANKSEL (_tmp + 1)
+000052 23??           00421         ADDWFC  (_tmp + 1), F, B
+                      00422 ;       .line   15; main.c      TMR0L = 0; //zerar o contador de pulsos
+000054 EE0F F0D6      00423         LFSR    0x00, 0xfd6
+000058 0E00           00424         MOVLW   0x00
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE  9
+
+
+LOC    OBJECT CODE    LINE  SOURCE TEXT
+  VALUE
+
+00005A 6EEF           00425         MOVWF   INDF0
+                      00426 ;       .line   16; main.c      BitClr(PIR1, 1); //limpar flag do timer  
+00005C EE0F F09E      00427         LFSR    0x00, 0xf9e
+000060 CFEF F000      00428         MOVFF   INDF0, r0x00
+000064 92??           00429         BCF     r0x00, 1
+000066 EE0F F09E      00430         LFSR    0x00, 0xf9e
+00006A C??? F???      00431         MOVFF   r0x00, INDF0
+00006E 010?           00432         BANKSEL _i
+                      00433 ;       .line   17; main.c      i++;
+000070 2B??           00434         INCF    _i, F, B
+000072 010?           00435         BANKSEL _i
+                      00436 ;       .line   18; main.c      if (i == 100) {
+000074 51??           00437         MOVF    _i, W, B
+000076 0A64           00438         XORLW   0x64
+000078 E1??           00439         BNZ     _00109_DS_
+00007A                00440 _00120_DS_:
+00007A 010?           00441         BANKSEL _i
+                      00442 ;       .line   19; main.c      i = 0;
+00007C 6B??           00443         CLRF    _i, B
+                      00444 ;       .line   20; main.c      pulsos = tmp;   //quantidade de pulsos a cada 1,003s
+00007E C??? F???      00445         MOVFF   _tmp, _pulsos
+000082 C??? F???      00446         MOVFF   (_tmp + 1), (_pulsos + 1)
+000086 010?           00447         BANKSEL _tmp
+                      00448 ;       .line   21; main.c      tmp = 0;
+000088 6B??           00449         CLRF    _tmp, B
+00008A 010?           00450         BANKSEL (_tmp + 1)
+00008C 6B??           00451         CLRF    (_tmp + 1), B
+00008E                00452 _00109_DS_:
+00008E CFE4 F000      00453         MOVFF   PREINC1, r0x01
+000092 CFE4 F000      00454         MOVFF   PREINC1, r0x00
+000096 CFE4 FFD9      00455         MOVFF   PREINC1, FSR2L
+00009A CFE4 FFFB      00456         MOVFF   PREINC1, PCLATU
+00009E CFE4 FFFA      00457         MOVFF   PREINC1, PCLATH
+0000A2 CFE4 FFEA      00458         MOVFF   PREINC1, FSR0H
+0000A6 CFE4 FFE9      00459         MOVFF   PREINC1, FSR0L
+0000AA CFE4 FFF4      00460         MOVFF   PREINC1, PRODH
+0000AE CFE4 FFF3      00461         MOVFF   PREINC1, PRODL
+0000B2 50E4           00462         MOVF    PREINC1, W
+0000B4 CFE4 FFE0      00463         MOVFF   PREINC1, BSR
+0000B8 CFE4 FFD8      00464         MOVFF   PREINC1, STATUS
+0000BC 0010           00465         RETFIE  
+                      00466 
+                      00467 
+                      00468 
+                      00469 ; Statistics:
+                      00470 ; code size:      930 (0x03a2) bytes ( 0.71%)
+                      00471 ;                 465 (0x01d1) words
+                      00472 ; udata size:       5 (0x0005) bytes ( 0.39%)
+                      00473 ; access size:      2 (0x0002) bytes
+                      00474 
+                      00475 
+                      00476         end
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                              TYPE        VALUE         VALUE          VALUE
+                                                 (hex)         (dec)          (text)
+
+BSR                               CONSTANT      00000FE0           4064
+FSR0H                             CONSTANT      00000FEA           4074
+FSR0L                             CONSTANT      00000FE9           4073
+FSR1L                             CONSTANT      00000FE1           4065
+FSR2L                             CONSTANT      00000FD9           4057
+INDF0                             CONSTANT      00000FEF           4079
+PCLATH                            CONSTANT      00000FFA           4090
+PCLATU                            CONSTANT      00000FFB           4091
+POSTDEC1                          CONSTANT      00000FE5           4069
+POSTINC1                          CONSTANT      00000FE6           4070
+PREINC1                           CONSTANT      00000FE4           4068
+PRODH                             CONSTANT      00000FF4           4084
+PRODL                             CONSTANT      00000FF3           4083
+STATUS                            CONSTANT      00000FD8           4056
+_00109_DS_                        ADDRESS       0000008E            142
+_00120_DS_                        ADDRESS       0000007A            122
+_00126_DS_                        ADDRESS       0000011A            282
+_Contador                         GLOBAL        00000000              0
+_EnviaComando                     EXTERNAL      00000000              0
+_EnviaDados                       EXTERNAL      00000000              0
+_InicializaLCD                    EXTERNAL      00000000              0
+__16_BIT                          CONSTANT      00000001              1
+__18F4520                         CONSTANT      00000001              1
+__ACC_RAM_LOW_END                 CONSTANT      0000007F            127
+__ACC_RAM_LOW_START               CONSTANT      00000000              0
+__ACTIVE_BANK_ADDR                VARIABLE      FFFFFFFF             -1
+__ASSUMED_BANK_ADDR               VARIABLE      FFFFFFFF             -1
+__BANK_0                          CONSTANT      00000000              0
+__BANK_1                          CONSTANT      00000100            256
+__BANK_2                          CONSTANT      00000200            512
+__BANK_3                          CONSTANT      00000300            768
+__BANK_4                          CONSTANT      00000400           1024
+__BANK_5                          CONSTANT      00000500           1280
+__BANK_6                          CONSTANT      00000600           1536
+__BANK_7                          CONSTANT      00000700           1792
+__BANK_8                          CONSTANT      00000800           2048
+__BANK_9                          CONSTANT      00000900           2304
+__BANK_10                         CONSTANT      00000A00           2560
+__BANK_11                         CONSTANT      00000B00           2816
+__BANK_12                         CONSTANT      00000C00           3072
+__BANK_13                         CONSTANT      00000D00           3328
+__BANK_14                         CONSTANT      00000E00           3584
+__BANK_15                         CONSTANT      00000F00           3840
+__BANK_BITS                       CONSTANT      00000F00           3840
+__BANK_FIRST                      CONSTANT      00000000              0
+__BANK_INV                        CONSTANT      FFFFFFFF             -1
+__BANK_LAST                       CONSTANT      00000F00           3840
+__BANK_MASK                       CONSTANT      000000FF            255
+__BANK_SHIFT                      CONSTANT      00000008              8
+__BANK_SIZE                       CONSTANT      00000100            256
+__CODE_END                        CONSTANT      00007FFF          32767
+__CODE_START                      CONSTANT      00000000              0
+gpasm-1.5.0 #1285 (Sep 12 2016) build/default   5-23-2018  17:04:22         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                              TYPE        VALUE         VALUE          VALUE
+                                                 (hex)         (dec)          (text)
+
+__COMMON_RAM_END                  CONSTANT      0000007F            127
+__COMMON_RAM_START                CONSTANT      00000000              0
+__CONFIG_END                      CONSTANT      0030000D        3145741
+__CONFIG_START                    CONSTANT      00300000        3145728
+__EEPROM_END                      CONSTANT      00F000FF       15728895
+__EEPROM_START                    CONSTANT      00F00000       15728640
+__EXTENDED                        CONSTANT      00000001              1
+__GPUTILS_SVN_VERSION             CONSTANT      00000505           1285
+__GPUTILS_VERSION_MAJOR           CONSTANT      00000001              1
+__GPUTILS_VERSION_MICRO           CONSTANT      00000000              0
+__GPUTILS_VERSION_MINOR           CONSTANT      00000005              5
+__IDLOCS_END                      CONSTANT      00200007        2097159
+__IDLOCS_START                    CONSTANT      00200000        2097152
+__NUM_BANKS                       CONSTANT      00000010             16
+__VECTOR_INT_HIGH                 CONSTANT      00000008              8
+__VECTOR_INT_LOW                  CONSTANT      00000018             24
+__VECTOR_RESET                    CONSTANT      00000000              0
+__WHILE_LOOP_COUNT_MAX            CONSTANT      000000FF            255
+__divsint                         EXTERNAL      00000000              0
+__modsint                         EXTERNAL      00000000              0
+__mulint                          EXTERNAL      00000000              0
+_i                                GLOBAL        00000000              0
+_main                             GLOBAL        00000000              0
+_pulsos                           GLOBAL        00000000              0
+_tmp                              GLOBAL        00000000              0
+ivec_0x1_Contador                 ADDRESS       00000008              8
+r0x00                             STATIC        00000000              0
+r0x01                             STATIC        00000001              1
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
